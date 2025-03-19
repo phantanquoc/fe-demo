@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import DepartmentView from './components/DepartmentView';
+import Login from './components/Login';
 import { Menu, X } from 'lucide-react';
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeDepartment, setActiveDepartment] = useState<string | null>('dashboard');
   const [activeSubDepartment, setActiveSubDepartment] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
 
   // Handle window resize
   useEffect(() => {
@@ -22,6 +25,32 @@ function App() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Check if user is already logged in (from localStorage)
+  useEffect(() => {
+    const savedUser = localStorage.getItem('apf_user');
+    if (savedUser) {
+      setIsLoggedIn(true);
+      setCurrentUser(savedUser);
+    }
+  }, []);
+
+  const handleLogin = (username: string, password: string) => {
+    // In a real app, you would validate credentials with a backend
+    setIsLoggedIn(true);
+    setCurrentUser(username);
+    localStorage.setItem('apf_user', username);
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    localStorage.removeItem('apf_user');
+  };
+
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />;
+  }
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-gray-100 overflow-hidden">
@@ -62,6 +91,8 @@ function App() {
               setActiveSubDepartment(id);
               if (isMobile) setSidebarOpen(false);
             }}
+            currentUser={currentUser}
+            onLogout={handleLogout}
           />
         </div>
       </div>

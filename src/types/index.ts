@@ -24,3 +24,10 @@ export interface GoalPlan {
   assignee: string;
   priority: 'low' | 'medium' | 'high';
 }
+
+export interface User {
+  username: string;
+  fullName: string;
+  role: string;
+  department?: string;
+}
