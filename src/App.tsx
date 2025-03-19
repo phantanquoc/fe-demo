@@ -57,7 +57,7 @@ function App() {
       {/* Mobile Header */}
       {isMobile && (
         <div className="bg-gray-800 text-white p-4 flex justify-between items-center md:hidden">
-          <h1 className="text-xl font-bold">APF System</h1>
+          <h1 className="text-xl font-bold">ABF System</h1>
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-1 rounded-md hover:bg-gray-700 focus:outline-none"

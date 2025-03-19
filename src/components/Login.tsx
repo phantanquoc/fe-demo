@@ -122,7 +122,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </div>
           
           <div className="bg-gray-50 px-4 py-3 text-center text-xs text-gray-600 border-t">
-            © 2025 ABF System. Bản quyền thuộc về Công ty APF.
+            © 2025 ABF System. Bản quyền thuộc về Công ty ABF.
           </div>
         </div>
         
