@@ -1,38 +1,46 @@
 import React, { useState } from 'react';
-import { Lock, User, AlertCircle } from 'lucide-react';
+import { Lock, User, Mail, AlertCircle } from 'lucide-react';
 
-interface LoginProps {
-  onLogin: (username: string, password: string) => void;
-  onSwitchToRegister: () => void;
+interface RegisterProps {
+  onRegister: (username: string, email: string, password: string) => void;
+  onSwitchToLogin: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
+const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!username.trim() || !password.trim()) {
-      setError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu');
+    if (!username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
+      setError('Vui lòng nhập đầy đủ thông tin đăng ký');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp');
+      return;
+    }
+    
+    // Kiểm tra định dạng email đơn giản
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Email không hợp lệ');
       return;
     }
     
     setIsLoading(true);
     setError(null);
     
-    // Giả lập quá trình đăng nhập
+    // Giả lập quá trình đăng ký
     setTimeout(() => {
       setIsLoading(false);
-      
-      // Kiểm tra thông tin đăng nhập (demo)
-      if (username === 'admin' && password === 'admin') {
-        onLogin(username, password);
-      } else {
-        setError('Tên đăng nhập hoặc mật khẩu không chính xác');
-      }
+      onRegister(username, email, password);
     }, 1000);
   };
 
@@ -46,7 +54,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
           </div>
           
           <div className="p-6">
-            <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">Đăng nhập</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">Đăng ký tài khoản</h2>
             
             {error && (
               <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-3 rounded">
@@ -77,7 +85,26 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
                 </div>
               </div>
               
-              <div className="mb-6">
+              <div className="mb-4">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Nhập địa chỉ email"
+                  />
+                </div>
+              </div>
+              
+              <div className="mb-4">
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Mật khẩu
                 </label>
@@ -96,6 +123,25 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
                 </div>
               </div>
               
+              <div className="mb-6">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                  Xác nhận mật khẩu
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Nhập lại mật khẩu"
+                  />
+                </div>
+              </div>
+              
               <div>
                 <button
                   type="submit"
@@ -110,23 +156,21 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
                       </svg>
                       Đang xử lý...
                     </>
-                  ) : 'Đăng nhập'}
+                  ) : 'Đăng ký'}
                 </button>
               </div>
             </form>
             
             <div className="mt-4 text-center">
-              <div className="flex justify-between items-center">
-                <a href="#" className="text-sm text-blue-600 hover:text-blue-800">
-                  Quên mật khẩu?
-                </a>
+              <p className="text-sm text-gray-600">
+                Đã có tài khoản?{' '}
                 <button 
-                  onClick={onSwitchToRegister}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  onClick={onSwitchToLogin}
+                  className="text-blue-600 hover:text-blue-800 font-medium"
                 >
-                  Đăng ký tài khoản
+                  Đăng nhập
                 </button>
-              </div>
+              </p>
             </div>
           </div>
           
@@ -143,4 +187,4 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
   );
 };
 
-export default Login;
+export default Register;

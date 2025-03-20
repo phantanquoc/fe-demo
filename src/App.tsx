@@ -3,10 +3,12 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import DepartmentView from './components/DepartmentView';
 import Login from './components/Login';
+import Register from './components/Register';
 import { Menu, X } from 'lucide-react';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
   const [activeDepartment, setActiveDepartment] = useState<string | null>('dashboard');
   const [activeSubDepartment, setActiveSubDepartment] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -42,6 +44,17 @@ function App() {
     localStorage.setItem('apf_user', username);
   };
 
+  const handleRegister = (username: string, email: string, password: string) => {
+    // In a real app, you would send this data to a backend
+    // For demo purposes, we'll just log in the user after registration
+    setIsLoggedIn(true);
+    setCurrentUser(username);
+    localStorage.setItem('apf_user', username);
+    
+    // Here you would typically store the new user in a database
+    console.log('New user registered:', { username, email });
+  };
+
   const handleLogout = () => {
     setIsLoggedIn(false);
     setCurrentUser(null);
@@ -49,7 +62,20 @@ function App() {
   };
 
   if (!isLoggedIn) {
-    return <Login onLogin={handleLogin} />;
+    if (showRegister) {
+      return (
+        <Register 
+          onRegister={handleRegister} 
+          onSwitchToLogin={() => setShowRegister(false)} 
+        />
+      );
+    }
+    return (
+      <Login 
+        onLogin={handleLogin} 
+        onSwitchToRegister={() => setShowRegister(true)}
+      />
+    );
   }
 
   return (
