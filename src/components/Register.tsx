@@ -1,24 +1,27 @@
 import React, { useState } from 'react';
-import { Lock, User, Mail, AlertCircle } from 'lucide-react';
+import axios from 'axios';
+import { Lock, User, Mail, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface RegisterProps {
-  onRegister: (username: string, email: string, password: string) => void;
   onSwitchToLogin: () => void;
 }
 
-const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
+const Register: React.FC<RegisterProps> = ({ onSwitchToLogin }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+    setError(null);
+    setSuccess(null);
+
     if (!username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
-      setError('Vui lòng nhập đầy đủ thông tin đăng ký');
+      setError('Vui lòng nhập đầy đủ thông tin');
       return;
     }
 
@@ -26,22 +29,42 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
       setError('Mật khẩu xác nhận không khớp');
       return;
     }
-    
-    // Kiểm tra định dạng email đơn giản
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError('Email không hợp lệ');
       return;
     }
-    
+
     setIsLoading(true);
-    setError(null);
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/register', {
+        username,
+        email,
+        password,
+      });
     
-    // Giả lập quá trình đăng ký
-    setTimeout(() => {
+      setSuccess(response.data.message);
+      setUsername('');
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+    
+      setTimeout(() => {
+        setSuccess(null);
+        onSwitchToLogin(); // Chuyển sang trang đăng nhập sau khi đăng ký thành công
+      }, 2000);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || 'Có lỗi xảy ra');
+      } else {
+        setError('Lỗi không xác định');
+      }
+    } finally {
       setIsLoading(false);
-      onRegister(username, email, password);
-    }, 1000);
+    }
+    
   };
 
   return (
@@ -52,10 +75,10 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
             <h1 className="text-2xl font-bold text-white">ABF System</h1>
             <p className="text-blue-100 mt-1">Hệ thống quản lý doanh nghiệp</p>
           </div>
-          
+
           <div className="p-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-6 text-center">Đăng ký tài khoản</h2>
-            
+
             {error && (
               <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-3 rounded">
                 <div className="flex items-center">
@@ -64,11 +87,20 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
                 </div>
               </div>
             )}
-            
+
+            {success && (
+              <div className="mb-4 bg-green-50 border-l-4 border-green-500 p-3 rounded">
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                  <p className="text-sm text-green-600">{success}</p>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                  Tên đăng nhập
+                  Tên người dùng
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -84,7 +116,7 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
                   />
                 </div>
               </div>
-              
+
               <div className="mb-4">
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email
@@ -103,7 +135,7 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
                   />
                 </div>
               </div>
-              
+
               <div className="mb-4">
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Mật khẩu
@@ -122,7 +154,7 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
                   />
                 </div>
               </div>
-              
+
               <div className="mb-6">
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                   Xác nhận mật khẩu
@@ -141,46 +173,27 @@ const Register: React.FC<RegisterProps> = ({ onRegister, onSwitchToLogin }) => {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className={`w-full py-2 px-4 rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
-                  {isLoading ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Đang xử lý...
-                    </>
-                  ) : 'Đăng ký'}
+                  {isLoading ? 'Đang xử lý...' : 'Đăng ký'}
                 </button>
               </div>
             </form>
-            
+
             <div className="mt-4 text-center">
               <p className="text-sm text-gray-600">
                 Đã có tài khoản?{' '}
-                <button 
-                  onClick={onSwitchToLogin}
-                  className="text-blue-600 hover:text-blue-800 font-medium"
-                >
+                <button onClick={onSwitchToLogin} className="text-blue-600 hover:text-blue-800 font-medium">
                   Đăng nhập
                 </button>
               </p>
             </div>
           </div>
-          
-          <div className="bg-gray-50 px-4 py-3 text-center text-xs text-gray-600 border-t">
-            © 2025 ABF System. Bản quyền thuộc về Công ty ABF.
-          </div>
-        </div>
-        
-        <div className="mt-4 text-center text-sm text-gray-600">
-          <p>Hỗ trợ kỹ thuật: <a href="mailto:support@abf.com" className="text-blue-600 hover:text-blue-800">support@abf.com</a></p>
         </div>
       </div>
     </div>

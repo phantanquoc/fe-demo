@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Lock, User, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 
 interface LoginProps {
   onLogin: (username: string, password: string) => void;
@@ -12,37 +13,41 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+  
     if (!username.trim() || !password.trim()) {
       setError('Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu');
       return;
     }
-    
+  
     setIsLoading(true);
     setError(null);
-    
-    // Giả lập quá trình đăng nhập
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // Kiểm tra thông tin đăng nhập (demo)
-      if (username === 'admin' && password === 'admin') {
-        onLogin(username, password);
+  
+    try {
+      const response = await axios.post('http://localhost:5000/api/login', {
+        email: username,
+        password,
+      });
+  
+      onLogin(response.data.user.username, password);
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.message || 'Đăng nhập thất bại');
       } else {
-        setError('Tên đăng nhập hoặc mật khẩu không chính xác');
+        setError('Lỗi kết nối đến server');
       }
-    }, 1000);
+    } finally {
+      setIsLoading(false);
+    }
   };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="bg-blue-600 p-6 text-center">
             <h1 className="text-2xl font-bold text-white">ABF System</h1>
-            <p className="text-blue-100 mt-1">Hệ thống quản lý doanh nghiệp</p>
+            <p className="text-blue-100 mt-1">Hệ thống quản lý công ty</p>
           </div>
           
           <div className="p-6">
